@@ -7,49 +7,96 @@
 #include <bn_vector.h>
 
 #include "bn_sprite_items_dot.h"
-#include "bn_sprite_items_square.h"
 #include "movement.h"
 #include "Center.h"
 #include "Orbiter.h"
 
-// A scaling factor by which to reduce the force applied when orbiting
-// Important for numerical stability
-static constexpr bn::fixed FORCE_SCALE = 10;
-
 // Maximum number of orbiters allowed on the screen
 static constexpr int MAX_ORBITERS = 30;
 
-// Default starting posiiton and velocity for Orbiter
-static constexpr bn::fixed_point ORBITER_START_POSIITON = {0, 0};
-static constexpr bn::fixed_point ORBITER_START_VELOCITY = {0, 5};
-
-// Declared so it would recogize the function before its use in Center.update()
-void dPadMoveSprite(bn::sprite_ptr& sprite, bn::fixed speed);
-
-
-int main() {
+int main()
+{
     bn::core::init();
 
     Center center = Center({30, 40}, .05, 2);
     bn::vector<Orbiter, MAX_ORBITERS> orbiters = {};
-    
-    while(true) {
-        // Add an orbiter when A is pressed if there's room
-        if(bn::keypad::a_pressed()) {
-            if(orbiters.size() < MAX_ORBITERS) {
-                orbiters.push_back(Orbiter(ORBITER_START_POSIITON, ORBITER_START_VELOCITY, center));
+
+    // Player-adjustable spawn settings:
+    bn::fixed_point spawn_position = {0, 0};
+    bn::fixed_point spawn_velocity = {0, 5};
+
+    // Visual preview of where the next orbiter will spawn:
+    bn::sprite_ptr spawn_preview = bn::sprite_items::dot.create_sprite(spawn_position);
+
+    while(true)
+    {
+        // Hold L + D-pad to adjust spawn position:
+        if(bn::keypad::l_held())
+        {
+            if(bn::keypad::left_held())
+            {
+                spawn_position.set_x(spawn_position.x() - 1);
+            }
+            if(bn::keypad::right_held())
+            {
+                spawn_position.set_x(spawn_position.x() + 1);
+            }
+            if(bn::keypad::up_held())
+            {
+                spawn_position.set_y(spawn_position.y() - 1);
+            }
+            if(bn::keypad::down_held())
+            {
+                spawn_position.set_y(spawn_position.y() + 1);
             }
         }
 
-        // Remove an orbiter when B is pressed if there's at least one
-        if (bn::keypad::b_pressed()) {
-            if(orbiters.size() > 0) {
+        // Hold R + D-pad to adjust spawn velocity:
+        if(bn::keypad::r_held())
+        {
+            if(bn::keypad::left_held())
+            {
+                spawn_velocity.set_x(spawn_velocity.x() - 0.25);
+            }
+            if(bn::keypad::right_held())
+            {
+                spawn_velocity.set_x(spawn_velocity.x() + 0.25);
+            }
+            if(bn::keypad::up_held())
+            {
+                spawn_velocity.set_y(spawn_velocity.y() - 0.25);
+            }
+            if(bn::keypad::down_held())
+            {
+                spawn_velocity.set_y(spawn_velocity.y() + 0.25);
+            }
+        }
+
+        // Update preview sprite position every frame:
+        spawn_preview.set_position(spawn_position);
+
+        // Add an orbiter when A is pressed if there's room:
+        if(bn::keypad::a_pressed())
+        {
+            if(orbiters.size() < MAX_ORBITERS)
+            {
+                orbiters.push_back(Orbiter(spawn_position, spawn_velocity, center));
+            }
+        }
+
+        // Remove an orbiter when B is pressed if there's at least one:
+        if(bn::keypad::b_pressed())
+        {
+            if(orbiters.size() > 0)
+            {
                 orbiters.pop_back();
             }
         }
 
         center.update();
-        for(Orbiter& orbiter : orbiters) {
+
+        for(Orbiter& orbiter : orbiters)
+        {
             orbiter.update();
         }
 
