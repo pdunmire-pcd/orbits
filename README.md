@@ -5,9 +5,8 @@ You control a moving “center” object, and can spawn orbiters that move using
 
 ## Live Demo (GitHub Pages)
 
-Play it here: **https://<pdunmire-pcd>.github.io/<orbits>/**
+Play it here: `https://pdunmire-pcd.github.io/orbits/`
 
-> Tip: If your repo name is `orbits`, the link is usually:
 > `https://github.com/pdunmire-pcd/orbits.git`
 
 ## Gameplay GIF
